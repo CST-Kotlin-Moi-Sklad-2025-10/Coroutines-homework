@@ -11,3 +11,7 @@ suspend fun log(block: () -> String) {
         println("Coroutine: ${get(CoroutineName)}, thread: ${Thread.currentThread().name}, ${block()}")
     }
 }
+
+fun logThread(block: () -> String) {
+    println("Thread: ${Thread.currentThread().name}, ${block()}")
+}
