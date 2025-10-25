@@ -9,36 +9,40 @@ import ru.otus.homework.log
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlin.time.Duration.Companion.seconds
 
 private const val numOfJobs = 10
 
 fun main(): Unit = runBlocking {
+    val numOfJobs = 5
     println("Jobs: requested($numOfJobs), complete(${runJobs(numOfJobs)})")
+    println("Jobs: requested(3), complete(${runJobs(3)})")
+    println("Jobs: requested(1), complete(${runJobs(1)})")
 }
 
 /**
  * Runs some jobs concurrently
  */
-suspend fun runJobs(count: Int, random: Random = Random): Int {
-    // 1. Launch some jobs concurrently
-    val jobs = coroutineScope {
-        (1..count).map { index ->
-            launch(CoroutineName("Job $index")) {
+suspend fun runJobs(numOfJobs: Int, random: Random = Random): Int = coroutineScope {
+    val jobs = List(numOfJobs) {
+        async {
+            try {
                 doSomeJob(
-                    duration = random.nextInt(1, 5).seconds,
+                    duration = 1.seconds,
                     fails = random.nextBoolean()
                 )
+                true
+            } catch (e: Exception) {
+                false
             }
         }
     }
 
-    // 2. Return number of completed jobs
-    return jobs.count { it.isCompleted && it.isCancelled.not() }
+    val results = jobs.awaitAll()
+    return@coroutineScope results.count { it }
 }
-
-/**
- * Does some job with some duration and possibility of failure
- */
 suspend fun doSomeJob(duration: Duration, fails: Boolean): String {
     log { "Starting job..." }
     delay(duration)
