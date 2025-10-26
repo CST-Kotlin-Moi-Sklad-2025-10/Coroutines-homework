@@ -1,9 +1,9 @@
 package ru.otus.homework.scope
 
 import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import ru.otus.homework.log
 import kotlin.random.Random
@@ -20,20 +20,26 @@ fun main(): Unit = runBlocking {
  * Runs some jobs concurrently
  */
 suspend fun runJobs(count: Int, random: Random = Random): Int {
-    // 1. Launch some jobs concurrently
+    // 1. Launch some jobs concurrently using async to track success/failure
     val jobs = coroutineScope {
         (1..count).map { index ->
-            launch(CoroutineName("Job $index")) {
-                doSomeJob(
-                    duration = random.nextInt(1, 5).seconds,
-                    fails = random.nextBoolean()
-                )
+            async(CoroutineName("Job $index")) {
+                try {
+                    doSomeJob(
+                        duration = random.nextInt(1, 5).seconds,
+                        fails = random.nextBoolean()
+                    )
+                    true // Job succeeded
+                } catch (e: Exception) {
+                    // Catch exception to prevent cancellation of other jobs
+                    false // Job failed
+                }
             }
         }
     }
 
-    // 2. Return number of completed jobs
-    return jobs.count { it.isCompleted && it.isCancelled.not() }
+    // 2. Return number of completed jobs (count successful ones)
+    return jobs.count { it.await() }
 }
 
 /**
