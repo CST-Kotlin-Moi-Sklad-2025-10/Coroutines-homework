@@ -42,6 +42,19 @@ class ScopeTest {
         }
     }
 
+    @Test
+    fun countsSuccessfullyCompletedJobsWhenSomeFail() = test {
+        val numOfJobs = 20
+        // First 5 calls to random.nextBoolean() return false (success),
+        // remaining calls return true (failure)
+        every { random.nextBoolean() } returnsMany (
+                List(5) { false } + true
+        )
+        launch(CoroutineExceptionHandler { _, _ -> }) {
+            assertEquals(5, runJobs(numOfJobs, random))
+        }
+    }
+
     private fun test(block: suspend TestScope.() -> Unit) = runTest(
         UnconfinedTestDispatcher(),
         testBody = block
