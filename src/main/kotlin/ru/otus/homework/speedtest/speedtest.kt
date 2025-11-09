@@ -1,5 +1,7 @@
 package ru.otus.homework.speedtest
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 
@@ -12,6 +14,19 @@ fun main(): Unit = runBlocking {
 }
 
 suspend fun measureNetworkSpeed(numOfRequests: Int, service: SpeedtestService): Double = coroutineScope {
-    TODO("Implement speed-test")
+    val successfulMeasurements = (0 until numOfRequests)
+        .map {
+            async {
+                service.measureRequestTime()
+            }
+        }
+        .awaitAll()
+        .mapNotNull { it.getOrNull() }
+
+    if (successfulMeasurements.isEmpty()) {
+        Double.NaN
+    } else {
+        successfulMeasurements.average()
+    }
 }
 
