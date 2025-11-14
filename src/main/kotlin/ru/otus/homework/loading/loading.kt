@@ -1,8 +1,10 @@
 package ru.otus.homework.loading
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 fun main(): Unit = runBlocking {
@@ -16,7 +18,19 @@ fun main(): Unit = runBlocking {
     println("Done")
 }
 
-fun loadProfile(id: UUID, service: NetworkService): Flow<LceState<UserProfile>> = emptyFlow()
+fun loadProfile(id: UUID, service: NetworkService): Flow<LceState<UserProfile>> = flow {
+    emit(LceState.Loading)
+
+    try {
+        val res = withContext(Dispatchers.IO) {
+            service.loadProfile(id)
+        }
+        emit(LceState.Content(res))
+    }
+    catch (e: Throwable) {
+        emit(LceState.Error(e))
+    }
+}
 
 
 
