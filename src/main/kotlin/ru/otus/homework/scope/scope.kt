@@ -1,10 +1,10 @@
 package ru.otus.homework.scope
 
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.supervisorScope
 import ru.otus.homework.log
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -21,7 +21,7 @@ fun main(): Unit = runBlocking {
  */
 suspend fun runJobs(count: Int, random: Random = Random): Int {
     // 1. Launch some jobs concurrently
-    val jobs = coroutineScope {
+    val jobs = supervisorScope {
         (1..count).map { index ->
             launch(CoroutineName("Job $index")) {
                 doSomeJob(
