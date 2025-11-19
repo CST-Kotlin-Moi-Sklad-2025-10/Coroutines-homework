@@ -1,7 +1,6 @@
 package ru.otus.homework.scope
 
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
